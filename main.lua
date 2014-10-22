@@ -144,6 +144,7 @@ function love.load()
 
   timepassed = 0
   next_hide = 0
+  num_unhides = 0
 end
 
 function love.quit()
@@ -160,7 +161,7 @@ end
 
 function love.draw()
   if game_won() then
-    print_centered("You won!")
+    print_centered("You won! Score: " .. num_unhides)
   else
     local counter = 1
     local i, j, source
@@ -193,6 +194,7 @@ function love.mousepressed(x, y, button)
           elseif unhidden < 2 then
             images[i]["hidden"] = false
             next_hide = timepassed + hide_timeout
+            num_unhides = num_unhides + 1
 
             local a, b = solution()
             if a and b then
