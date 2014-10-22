@@ -73,6 +73,14 @@ function solution()
   return a, b
 end
 
+function game_won()
+  return count_solved() == num_images
+end
+
+function print_centered(text)
+  love.graphics.printf(text, 0, (win_size/2)-(font_size/2), win_size, 'center')
+end
+
 function love.load()
   num_images = 16
   grid_size = 4
@@ -118,9 +126,13 @@ function love.load()
   end
 
   win_size = (grid_size * (imgw + border)) + border
-  win_flags = {resizable = false}
+  local win_flags = {resizable = false}
+  font_size = 20
+  local font = love.graphics.newFont(font_size)
+  love.graphics.setFont(font)
   love.graphics.setBackgroundColor(50, 50, 50)
   love.window.setMode(win_size, win_size, win_flags)
+
 
   timepassed = 0
   next_hide = 0
@@ -139,8 +151,8 @@ function love.update(dt)
 end
 
 function love.draw()
-  if count_solved() == num_images then
-    love.graphics.print("You won!", 100, 100)
+  if game_won() then
+    print_centered("You won!")
   else
     counter = 1
     for i = 1, num_images / grid_size, 1 do
@@ -158,7 +170,7 @@ function love.draw()
 end
 
 function love.mousepressed(x, y, button)
-  if button == "l" then
+  if not game_won() and button == "l" then
     for i = 1, num_images, 1 do
       if x >= images[i]["x"] and x <= images[i]["x"]+imgw then
         if y >= images[i]["y"] and y <= images[i]["y"]+imgh then
