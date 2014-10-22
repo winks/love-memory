@@ -1,10 +1,11 @@
 function randomize(min, max)
-  t = {}
+  local i, rnd
+  local t = {}
   for i = min, max, 1 do
     t[#t + 1] = i
     t[#t + 1] = i
   end
-  t2 = {}
+  local t2 = {}
   while #t > 0 do
     rnd = love.math.random(1, #t)
     t2[#t2 + 1] = t[rnd]
@@ -13,7 +14,8 @@ function randomize(min, max)
   return t2
 end
 
-function hideall()
+function hide_all()
+  local i
   for i = 1, num_images, 1 do
     if not images[i]["solved"] then
       images[i]["hidden"] = true
@@ -22,7 +24,8 @@ function hideall()
 end
 
 function count_unhidden()
-  count = 0
+  local count = 0
+  local i
   for i = 1, num_images, 1 do
     if not images[i]["hidden"] then
       if not images[i]["solved"] then
@@ -30,26 +33,24 @@ function count_unhidden()
       end
     end
   end
-
   return count
 end
 
 function count_solved()
-  count = 0
+  local count = 0
+  local i
   for i = 1, num_images, 1 do
     if images[i]["solved"] then
       count = count + 1
     end
   end
-
   return count
 end
 
 function solution()
-  a = nil
-  b = nil
-
-  count = 0
+  local a = nil
+  local b = nil
+  local count = 0
   for i = 1, num_images, 1 do
     if not images[i]["solved"] then
       if not images[i]["hidden"] then
@@ -81,24 +82,33 @@ function print_centered(text)
   love.graphics.printf(text, 0, (win_size/2)-(font_size/2), win_size, 'center')
 end
 
+function print_debug(text)
+  if DEBUG then
+    print(text)
+  end
+end
+
 function love.load()
+  DEBUG = false
   num_images = 16
   grid_size = 4
-  border = 20
-  size = 75
   hide_timeout = 1
+  imgw = 75
+  imgh = 75
+  font_size = 20
 
-  imgx = border
-  imgy = border
-
-  imgw = size
-  imgh = size
   images = {}
 
-  randomized = randomize(1, (num_images/2))
-  print("### " .. #randomized)
-  for a,b in ipairs(randomized) do
-    print(a .. ":" .. b)
+  local img_margin = 20
+  local a, b, i, j, x, y
+  local imgx = img_margin
+  local imgy = img_margin
+
+  local randomized = randomize(1, (num_images/2))
+  print_debug("### " .. #randomized)
+
+  for a, b in ipairs(randomized) do
+    print_debug(a .. ":" .. b)
   end
 
   for i = 1, num_images, 1 do
@@ -111,28 +121,26 @@ function love.load()
       hidden = true,
       solved = false,
     }
-    print("i " .. i .. "# " .. #images)
+    print_debug("i " .. i .. "# " .. #images)
   end
 
-  counter = 1
-  for i = 1, num_images / grid_size, 1 do
-    for j = 1, num_images / grid_size, 1 do
-      x = imgx + (j-1) * ( border + imgh )
-      y = imgy + (i-1) * ( border + imgw )
+  local counter = 1
+  for i = 1, (num_images / grid_size), 1 do
+    for j = 1, (num_images / grid_size), 1 do
+      x = imgx + (j-1) * ( img_margin + imgh )
+      y = imgy + (i-1) * ( img_margin + imgw )
       images[counter]["x"] = x
       images[counter]["y"] = y
       counter = counter + 1
     end
   end
 
-  win_size = (grid_size * (imgw + border)) + border
+  win_size = (grid_size * (imgw + img_margin)) + img_margin
   local win_flags = {resizable = false}
-  font_size = 20
   local font = love.graphics.newFont(font_size)
   love.graphics.setFont(font)
   love.graphics.setBackgroundColor(50, 50, 50)
   love.window.setMode(win_size, win_size, win_flags)
-
 
   timepassed = 0
   next_hide = 0
@@ -145,7 +153,7 @@ end
 function love.update(dt)
   timepassed = timepassed + dt
   if next_hide > 0 and next_hide < timepassed then
-    hideall()
+    hide_all()
     next_hide = timepassed -1
   end
 end
@@ -154,7 +162,8 @@ function love.draw()
   if game_won() then
     print_centered("You won!")
   else
-    counter = 1
+    local counter = 1
+    local i, j, source
     for i = 1, num_images / grid_size, 1 do
       for j = 1, num_images / grid_size, 1 do
         if images[counter]["hidden"] then
@@ -171,11 +180,12 @@ end
 
 function love.mousepressed(x, y, button)
   if not game_won() and button == "l" then
+    local i, unhidden
     for i = 1, num_images, 1 do
       if x >= images[i]["x"] and x <= images[i]["x"]+imgw then
         if y >= images[i]["y"] and y <= images[i]["y"]+imgh then
-          print("Clicked on image number " .. i .. " = " .. images[i]["x"] .. "/" .. images[i]["y"])
-          print("value:" .. images[i]["value"])
+          print_debug("Clicked on image number " .. i .. " = " .. images[i]["x"] .. "/" .. images[i]["y"])
+          print_debug("value:" .. images[i]["value"])
           unhidden = count_unhidden()
           if unhidden < 1 then
             images[i]["hidden"] = false
@@ -186,7 +196,7 @@ function love.mousepressed(x, y, button)
 
             local a, b = solution()
             if a and b then
-              print("solution!")
+              print_debug("solution!")
               images[a]["solved"] = true
               images[b]["solved"] = true
             end
