@@ -180,7 +180,7 @@ function love.draw()
 end
 
 function love.mousepressed(x, y, button)
-  if not game_won() and button == "l" then
+  if not game_won() and button == 1 then
     local i, unhidden
     for i = 1, num_images, 1 do
       if x >= images[i]["x"] and x <= images[i]["x"]+imgw then
